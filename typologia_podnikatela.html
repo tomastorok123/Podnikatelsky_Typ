@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Typológia podnikateľa – Dotazník</title>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f0f4f8;
+      color: #1a1a2e;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 16px 60px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.10);
+      max-width: 680px;
+      width: 100%;
+      padding: 40px 44px;
+    }
+
+    .logo-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .logo-icon {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 22px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .subtitle {
+      color: #64748b;
+      font-size: 0.97rem;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    /* ---- INTRO FORM ---- */
+    #intro label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #374151;
+      margin-bottom: 6px;
+    }
+
+    #intro input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1.5px solid #d1d5db;
+      border-radius: 10px;
+      font-size: 1rem;
+      color: #1a1a2e;
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 18px;
+    }
+
+    #intro input:focus { border-color: #2563eb; }
+
+    /* ---- PROGRESS ---- */
+    .progress-wrap {
+      margin-bottom: 24px;
+    }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.82rem;
+      color: #94a3b8;
+      margin-bottom: 6px;
+    }
+    .progress-bar {
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #2563eb, #7c3aed);
+      border-radius: 99px;
+      transition: width 0.35s ease;
+    }
+
+    /* ---- QUESTION ---- */
+    .question-block { display: none; }
+    .question-block.active { display: block; }
+
+    .q-number {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #2563eb;
+      margin-bottom: 8px;
+    }
+
+    .q-text {
+      font-size: 1.08rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+
+    .option {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 18px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.18s;
+      background: #fff;
+    }
+
+    .option:hover { border-color: #93c5fd; background: #eff6ff; }
+
+    .option.selected {
+      border-color: #2563eb;
+      background: #eff6ff;
+    }
+
+    .option-badge {
+      min-width: 30px; height: 30px;
+      border-radius: 8px;
+      background: #e2e8f0;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #475569;
+      transition: all 0.18s;
+    }
+
+    .option.selected .option-badge {
+      background: #2563eb;
+      color: #fff;
+    }
+
+    .option-text { font-size: 0.97rem; color: #374151; line-height: 1.5; padding-top: 4px; }
+
+    /* ---- NAVIGATION ---- */
+    .nav { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+
+    button {
+      padding: 12px 28px;
+      border-radius: 10px;
+      font-size: 0.97rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.18s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: #fff;
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    .btn-secondary {
+      background: #f1f5f9;
+      color: #475569;
+    }
+    .btn-secondary:hover { background: #e2e8f0; }
+
+    /* ---- RESULT ---- */
+    #result { display: none; text-align: center; }
+
+    .result-badge {
+      display: inline-block;
+      padding: 6px 18px;
+      border-radius: 99px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 18px;
+    }
+
+    .badge-A { background: #dcfce7; color: #166534; }
+    .badge-B { background: #dbeafe; color: #1e40af; }
+    .badge-C { background: #fef3c7; color: #92400e; }
+    .badge-mix { background: #f3e8ff; color: #6b21a8; }
+
+    .result-title {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 12px;
+      color: #1e293b;
+    }
+
+    .result-desc {
+      font-size: 1rem;
+      color: #475569;
+      line-height: 1.7;
+      max-width: 480px;
+      margin: 0 auto 24px;
+    }
+
+    .score-pills {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+
+    .score-pill {
+      padding: 8px 20px;
+      border-radius: 99px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      background: #f1f5f9;
+      color: #475569;
+    }
+    .score-pill.dominant { background: #2563eb; color: #fff; }
+
+    .result-sent {
+      background: #f0fdf4;
+      border: 1.5px solid #bbf7d0;
+      border-radius: 12px;
+      padding: 14px 20px;
+      color: #166534;
+      font-size: 0.92rem;
+      margin-bottom: 24px;
+    }
+
+    .restart-btn {
+      background: #f1f5f9;
+      color: #475569;
+      font-size: 0.88rem;
+      padding: 10px 22px;
+    }
+
+    /* ---- LOADING OVERLAY ---- */
+    #loading {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(255,255,255,0.85);
+      z-index: 100;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+    }
+    #loading.active { display: flex; }
+    .spinner {
+      width: 44px; height: 44px;
+      border: 4px solid #e2e8f0;
+      border-top-color: #2563eb;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-text { color: #475569; font-size: 0.97rem; }
+
+    @media (max-width: 520px) {
+      .card { padding: 28px 20px; }
+      h1 { font-size: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="loading"><div class="spinner"></div><p class="loading-text">Odosielam výsledky…</p></div>
+
+<div class="card">
+
+  <!-- LOGO -->
+  <div class="logo-bar">
+    <div class="logo-icon">🏗️</div>
+    <h1>Typológia podnikateľa</h1>
+  </div>
+
+  <!-- INTRO -->
+  <div id="intro">
+    <p class="subtitle">
+      Odpovedzte na 15 krátkych otázok a zistite, aký typ podnikateľa ste –
+      <strong>Budovateľ</strong>, <strong>Dividendár</strong> alebo <strong>Užívateľ</strong>.
+      Výsledok vám príde na e-mail.
+    </p>
+    <label for="userName">Vaše meno</label>
+    <input type="text" id="userName" placeholder="Meno a priezvisko" />
+    <label for="userEmail">Váš e-mail</label>
+    <input type="email" id="userEmail" placeholder="vas@email.sk" />
+    <button class="btn-primary" id="startBtn" onclick="startQuiz()" style="width:100%">Začať dotazník →</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz" style="display:none">
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span id="progressText">Otázka 1 z 15</span>
+        <span id="progressPct">0 %</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    </div>
+
+    <!-- Questions injected by JS -->
+    <div id="questionsContainer"></div>
+
+    <div class="nav">
+      <button class="btn-secondary" id="prevBtn" onclick="navigate(-1)" style="display:none">← Späť</button>
+      <button class="btn-primary" id="nextBtn" onclick="navigate(1)" disabled>Ďalej →</button>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result">
+    <div id="resultBadge" class="result-badge"></div>
+    <div class="result-title" id="resultTitle"></div>
+    <p class="result-desc" id="resultDesc"></p>
+    <div class="score-pills" id="scorePills"></div>
+    <div class="result-sent" id="resultSentMsg"></div>
+    <button class="restart-btn" onclick="restart()">↩ Vyplniť znova</button>
+  </div>
+
+</div>
+
+<script>
+// ─── EMAILJS CONFIG ──────────────────────────────────────────────────────────
+// 👉 REPLACE these three values after setting up your EmailJS account:
+const EMAILJS_PUBLIC_KEY   = "RaiJkIxTE8pXTmGyL";
+const EMAILJS_SERVICE_ID   = "service_tj9fcal";
+const EMAILJS_TPL_USER     = "template_l7bneaj";   // template pre účastníka
+const EMAILJS_TPL_CREATOR  = "template_md3bmr1"; // template pre teba
+const CREATOR_EMAIL        = "tomas@bizbuilders.sk";
+// ─────────────────────────────────────────────────────────────────────────────
+
+emailjs.init(EMAILJS_PUBLIC_KEY);
+
+const questions = [
+  { q: "Aký je váš hlavný cieľ pri podnikaní?",
+    a: "Chcem byť aktívny v každom aspekte firmy, budovať ju a zdokonaľovať.",
+    b: "Chcem, aby firma fungovala samostatne a generovala pasívny príjem.",
+    c: "Chcem firmu vybudovať, predať a získať finančnú slobodu." },
+  { q: "Aký vzťah máte k práci vo firme?",
+    a: "Práca vo firme ma napĺňa a baví.",
+    b: "Chcem vo firme robiť len to, čo ma baví, ostatné delegovať.",
+    c: "Práca vo firme nie je pre mňa cieľ, ale prostriedok." },
+  { q: "Ako by ste opísali svoj prístup k budovaniu firmy?",
+    a: "Baví ma rozvíjať firmu každý deň, je to moja vášeň.",
+    b: "Chcem nastaviť systémy, aby firma fungovala bez mojej stálej prítomnosti.",
+    c: "Budujem firmu iba preto, aby som z nej získal čo najviac." },
+  { q: "Čo je pre vás najdôležitejšie?",
+    a: "Proces budovania a vylepšovania firmy.",
+    b: "Zabezpečiť, aby firma bola efektívna a samostatná.",
+    c: "Finančný výnos a možnosť užívať si život mimo firmy." },
+  { q: "Ako sa vidíte vo firme v seniorskom veku?",
+    a: "Stále aktívne prispievam k chodu firmy.",
+    b: "Som skôr v pozícii mentora a pozorovateľa, firma beží sama.",
+    c: "Už dávno som firmu predal alebo od nej odstúpil." },
+  { q: "Aký typ úloh vás najviac baví?",
+    a: "Riešiť každodenné výzvy a zlepšovať procesy.",
+    b: "Navrhovať stratégie a nastavovať systémy.",
+    c: "Hľadať spôsoby, ako z firmy čo najviac vyťažiť." },
+  { q: "Čo by ste urobili, keby firma nefungovala podľa vašich očakávaní?",
+    a: "Osobne by som sa zapojil do riešenia problémov.",
+    b: "Upravím systémy a zistím, kto to môže vyriešiť za mňa.",
+    c: "Hľadal by som možnosti predaja alebo iného výnosu." },
+  { q: "Čo vás najviac motivuje k podnikaniu?",
+    a: "Vášeň pre prácu a rast firmy.",
+    b: "Budovanie udržateľného systému, ktorý generuje príjmy.",
+    c: "Finančná nezávislosť a sloboda." },
+  { q: "Ako pristupujete k delegovaniu práce?",
+    a: "Robím väčšinu vecí sám, delegujem minimum.",
+    b: "Delegujem všetko, čo nie je moja vášeň.",
+    c: "Delegujem čo najviac, aby som sa mohol venovať iným veciam." },
+  { q: "Akú rolu hrá vaša firma vo vašom živote?",
+    a: "Je to moja životná náplň.",
+    b: "Je to nástroj na zabezpečenie príjmov.",
+    c: "Je to prostriedok na dosiahnutie osobnej slobody." },
+  { q: "Ako by ste definovali svoj ideálny vzťah k firme?",
+    a: "Chcem byť neoddeliteľnou súčasťou firmy.",
+    b: "Chcem, aby firma fungovala samostatne, ja ju len usmerňujem.",
+    c: "Chcem, aby firma fungovala, kým ju nepredám alebo nezmením na cashcow." },
+  { q: "Čo vás najviac teší na podnikaní?",
+    a: "Každodenné výzvy a riešenie problémov.",
+    b: "Vidieť, ako firma rastie nezávisle odo mňa.",
+    c: "Finančné výsledky a voľný čas." },
+  { q: "Ako by ste zareagovali, keby ste mali dostatok peňazí na celý život?",
+    a: "Stále by som podnikal a venoval sa firme.",
+    b: "Venoval by som sa len strategickým veciam.",
+    c: "Prestal by som pracovať úplne." },
+  { q: "Ako vnímate svoje podnikateľské úspechy?",
+    a: "Ako výsledok mojej osobnej angažovanosti.",
+    b: "Ako úspech tímu a systému, ktorý som vytvoril.",
+    c: "Ako prostriedok na dosiahnutie životnej slobody." },
+  { q: "Čo pre vás znamená sloboda v podnikaní?",
+    a: "Možnosť robiť to, čo ma baví, každý deň.",
+    b: "Možnosť nechať firmu bežať aj bez mojej prítomnosti.",
+    c: "Možnosť žiť úplne nezávisle od firmy." }
+];
+
+const types = {
+  A: {
+    label: "Budovateľ",
+    badge: "badge-A",
+    desc: "Milujete aktívne budovanie firmy. Práca vo firme vás napĺňa a každodenné výzvy sú pre vás zdrojom energie a zmyslu."
+  },
+  B: {
+    label: "Dividendár",
+    badge: "badge-B",
+    desc: "Chcete firmu, ktorá funguje samostatne a generuje príjmy aj bez vašej aktívnej účasti. Systémy a tímy sú vaša superschopnosť."
+  },
+  C: {
+    label: "Užívateľ",
+    badge: "badge-C",
+    desc: "Podnikanie vnímate ako cestu k finančnej slobode a nezávislosti. Firma je pre vás prostriedok, nie cieľ."
+  }
+};
+
+let current = 0;
+let answers = new Array(15).fill(null);
+let userName = "", userEmail = "";
+
+function buildQuestions() {
+  const container = document.getElementById("questionsContainer");
+  container.innerHTML = "";
+  questions.forEach((q, i) => {
+    const div = document.createElement("div");
+    div.className = "question-block" + (i === 0 ? " active" : "");
+    div.id = "q" + i;
+    div.innerHTML = `
+      <p class="q-number">Otázka ${i+1} / 15</p>
+      <p class="q-text">${q.q}</p>
+      <div class="options">
+        ${["a","b","c"].map(opt => `
+          <div class="option" id="opt_${i}_${opt}" onclick="selectOption(${i},'${opt}')">
+            <div class="option-badge">${opt.toUpperCase()}</div>
+            <div class="option-text">${q[opt]}</div>
+          </div>`).join("")}
+      </div>`;
+    container.appendChild(div);
+  });
+}
+
+function startQuiz() {
+  userName = document.getElementById("userName").value.trim();
+  userEmail = document.getElementById("userEmail").value.trim();
+  if (!userName) { alert("Prosím zadajte svoje meno."); return; }
+  if (!userEmail || !userEmail.includes("@")) { alert("Prosím zadajte platný e-mail."); return; }
+  buildQuestions();
+  document.getElementById("intro").style.display = "none";
+  document.getElementById("quiz").style.display = "block";
+  updateUI();
+}
+
+function selectOption(qIdx, opt) {
+  answers[qIdx] = opt;
+  ["a","b","c"].forEach(o => {
+    const el = document.getElementById(`opt_${qIdx}_${o}`);
+    if (el) el.classList.toggle("selected", o === opt);
+  });
+  document.getElementById("nextBtn").disabled = false;
+}
+
+function navigate(dir) {
+  document.getElementById("q"+current).classList.remove("active");
+  current += dir;
+  document.getElementById("q"+current).classList.add("active");
+  updateUI();
+}
+
+function updateUI() {
+  const pct = Math.round((current / 15) * 100);
+  document.getElementById("progressText").textContent = `Otázka ${current+1} z 15`;
+  document.getElementById("progressPct").textContent = pct + " %";
+  document.getElementById("progressFill").style.width = pct + "%";
+  document.getElementById("prevBtn").style.display = current > 0 ? "inline-block" : "none";
+
+  const nextBtn = document.getElementById("nextBtn");
+  if (current === 14) {
+    nextBtn.textContent = "Zobraziť výsledok ✓";
+    nextBtn.onclick = submitQuiz;
+  } else {
+    nextBtn.textContent = "Ďalej →";
+    nextBtn.onclick = () => navigate(1);
+  }
+  nextBtn.disabled = answers[current] === null;
+}
+
+async function submitQuiz() {
+  const countA = answers.filter(a => a === "a").length;
+  const countB = answers.filter(a => a === "b").length;
+  const countC = answers.filter(a => a === "c").length;
+  const max = Math.max(countA, countB, countC);
+
+  const winners = [];
+  if (countA === max) winners.push("A");
+  if (countB === max) winners.push("B");
+  if (countC === max) winners.push("C");
+
+  let typLabel, typDesc, badgeClass;
+  if (winners.length === 1) {
+    const t = types[winners[0]];
+    typLabel = t.label; typDesc = t.desc; badgeClass = t.badge;
+  } else {
+    typLabel = winners.map(w => types[w].label).join(" + ");
+    typDesc = "Kombinujete prístupy viacerých typológií: " + winners.map(w => types[w].label).join(" a ") + ". " +
+              winners.map(w => types[w].desc).join(" ");
+    badgeClass = "badge-mix";
+  }
+
+  // Build answers table for emails
+  const answersFormatted = questions.map((q, i) =>
+    `${i+1}. ${q.q}\n   → ${answers[i].toUpperCase()}: ${questions[i][answers[i]]}`
+  ).join("\n\n");
+
+  const summaryLine = `Budovateľ (A): ${countA} | Dividendár (B): ${countB} | Užívateľ (C): ${countC}`;
+
+  showResult(typLabel, typDesc, badgeClass, countA, countB, countC, winners);
+
+  // Send emails
+  const loading = document.getElementById("loading");
+  loading.classList.add("active");
+  try {
+    // Email to participant
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TPL_USER, {
+      to_name:    userName,
+      to_email:   userEmail,
+      result_type: typLabel,
+      result_desc: typDesc,
+      score_a: countA, score_b: countB, score_c: countC,
+      summary: summaryLine,
+      answers_list: answersFormatted
+    });
+
+    // Email to creator
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TPL_CREATOR, {
+      participant_name:  userName,
+      participant_email: userEmail,
+      result_type: typLabel,
+      score_a: countA, score_b: countB, score_c: countC,
+      summary: summaryLine,
+      answers_list: answersFormatted,
+      to_email: CREATOR_EMAIL
+    });
+
+    document.getElementById("resultSentMsg").innerHTML =
+      "✅ Výsledok bol odoslaný na <strong>" + userEmail + "</strong>";
+  } catch(e) {
+    document.getElementById("resultSentMsg").innerHTML =
+      "⚠️ E-mail sa nepodarilo odoslať. Váš výsledok je zobrazený vyššie.";
+    document.getElementById("resultSentMsg").style.background = "#fff7ed";
+    document.getElementById("resultSentMsg").style.borderColor = "#fed7aa";
+    document.getElementById("resultSentMsg").style.color = "#9a3412";
+    console.error("EmailJS error:", e);
+  }
+  loading.classList.remove("active");
+}
+
+function showResult(title, desc, badgeClass, cA, cB, cC, winners) {
+  document.getElementById("quiz").style.display = "none";
+  const result = document.getElementById("result");
+  result.style.display = "block";
+
+  document.getElementById("resultBadge").className = "result-badge " + badgeClass;
+  document.getElementById("resultBadge").textContent = winners.length > 1 ? "Kombinácia typov" : "Váš typ";
+  document.getElementById("resultTitle").textContent = title;
+  document.getElementById("resultDesc").textContent = desc;
+
+  const pills = document.getElementById("scorePills");
+  const max = Math.max(cA, cB, cC);
+  pills.innerHTML = [
+    { label: "Budovateľ (A)", count: cA, key: "A" },
+    { label: "Dividendár (B)", count: cB, key: "B" },
+    { label: "Užívateľ (C)", count: cC, key: "C" }
+  ].map(p => `<span class="score-pill ${p.count === max ? 'dominant' : ''}">${p.label}: ${p.count}</span>`).join("");
+}
+
+function restart() {
+  current = 0; answers = new Array(15).fill(null); userName = ""; userEmail = "";
+  document.getElementById("result").style.display = "none";
+  document.getElementById("intro").style.display = "block";
+  document.getElementById("userName").value = "";
+  document.getElementById("userEmail").value = "";
+}
+</script>
+</body>
+</html>
